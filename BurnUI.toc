@@ -1,0 +1,11 @@
+## Title: Burns UI Tweaks
+## Interface: 40300
+BurnUI.lua
+Frames.lua
+panels.lua
+actionbars.lua
+mainmenubar.lua
+micmen.lua
+datatext.lua
+Minimap.lua
+

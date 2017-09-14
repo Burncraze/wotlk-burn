@@ -1,0 +1,158 @@
+ function move(frame,anchorPoint,relativeTo,relativePoint,xoff,yoff)
+  frame:ClearAllPoints()
+  frame:SetPoint(anchorPoint,relativeTo,relativePoint,xoff,yoff)
+ 
+  
+end
+
+
+		
+		for i = 1, 19 do
+    local texture = _G["MainMenuXPBarDiv"..i]
+    if texture then
+        texture:Hide()
+    end
+end
+for i=0,3 do
+  for _,bar in pairs({"ReputationWatchBarTexture","ReputationXPBarTexture"}) do
+    local texture = _G[bar..i]
+    texture:Hide()
+    texture.Show = function() end
+  end
+end
+-- XP/Rep Bar
+MainMenuXPBarTextureLeftCap:Hide()
+MainMenuXPBarTextureRightCap:Hide()
+MainMenuXPBarTextureMid:Hide()
+MainMenuExpBar:SetSize(475,10)
+ReputationWatchBar:SetSize(475,8)
+ReputationWatchStatusBar:SetSize(475,8)
+MainMenuExpBar:SetParent("UIParent")
+MainMenuExpBar:RegisterEvent("PLAYER_LOGIN")
+
+MainMenuExpBar:RegisterEvent("ADDON_LOADED")
+
+
+
+ReputationWatchBar:SetParent("UIParent")
+ReputationWatchBar:RegisterEvent("PLAYER_LOGIN")
+ReputationWatchBar:RegisterEvent("PLAYER_ENTERING_WORLD")
+ReputationWatchBar:RegisterEvent("ADDON_LOADED")
+ReputationWatchBar:RegisterEvent("PLAYER_XP_UPDATE");
+ReputationWatchBar:RegisterEvent("UPDATE_FACTION");
+ReputationWatchBar:RegisterEvent("PLAYER_UPDATE_RESTING");
+ReputationWatchBar:RegisterEvent("UPDATE_EXHAUSTION");
+
+
+
+----moving expbar to highest acton bar visible
+
+
+local lvl=UnitLevel("player")
+local mbmr=select(2, GetActionBarToggles())
+local mbml=select(1, GetActionBarToggles())
+-- if mbmr==1 then
+-- MainMenuExpBar:SetPoint("BOTTOMLEFT",MultiBarBottomRight,"TOPLEFT",0,4)
+-- end
+
+-- der=CreateFrame("FRAME")
+
+-- local function derf(self, event,...)
+-- if mbmr==nil and mbml==nil   then
+-- move(MainMenuExpBar,"BOTTOMLEFT",ActionButton1,"TOPLEFT",0,4)
+-- elseif mbmr== nil and mbml==1  then
+-- move(MainMenuExpBar,"BOTTOMLEFT",MultiBarBottomLeft,"TOPLEFT",0,4)
+-- else move(MainMenuExpBar,"BOTTOMLEFT",MultiBarBottomRight,"TOPLEFT",0,4)
+-- end
+-- end
+-- der:RegisterEvent("PLAYER_ENTERING_WORLD")
+-- der:HookScript("OnEvent",derf)
+local function topb(self)
+    MainMenuExpBar:HookScript("OnEvent", function(self)
+	move(MainMenuExpBar,"BOTTOMLEFT",MultiBarBottomRight,"TOPLEFT",0,4)
+	end)
+	ReputationWatchBar:HookScript("OnEvent", function(self)
+	move(ReputationWatchBar,"BOTTOMLEFT", MainMenuExpBar,"TOPLEFT", 0,2)
+	end)
+end
+local function midb(self)
+	MainMenuExpBar:HookScript("OnEvent", function(self)
+	move(MainMenuExpBar,"BOTTOMLEFT",MultiBarBottomLeft,"TOPLEFT",0,4)
+	end)
+	ReputationWatchBar:HookScript("OnEvent", function(self)
+	move(ReputationWatchBar,"BOTTOMLEFT", MainMenuExpBar,"TOPLEFT", 0,2)
+	end)
+end
+	
+local function botb(self)
+    MainMenuExpBar:HookScript("OnEvent", function(self)
+	move(MainMenuExpBar,"BOTTOMLEFT",ActionButton1,"TOPLEFT",0,4)
+	end)
+	ReputationWatchBar:HookScript("OnEvent", function(self)
+	move(ReputationWatchBar,"BOTTOMLEFT", MainMenuExpBar,"TOPLEFT", 0,2)
+	end)
+end
+
+if lvl==85 then
+	if mbmr==nil and mbml==nil   then
+	botb()
+	elseif mbmr== nil and mbml==1  then
+		midb()
+		else
+		topb()	
+	end 
+	else
+	if mbmr==nil and mbml==nil   then
+	botb()
+	elseif mbmr== nil and mbml==1  then
+		midb()
+		else
+		topb()	
+		end
+	end
+
+-- cc=CreateFrame("FRAME")
+-- cc:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+-- hooksecurefunc("ReputationWatchBar_Update",function()
+  --arbitrary position, you can use your config stuff here
+  -- ReputationWatchBar:ClearAllPoints()
+  -- ReputationWatchBar:SetPoint("CENTER",MainMenuExpBar,"CENTER")
+-- end)
+ 
+
+
+
+
+
+
+
+
+-- SetPoint expects (self,anchorPoint,relativeTo,relativePoint,xoff,yoff)
+-- to prevent this hook calling itself, we attach a custom flag at the end
+-- so it knows when not to react to the SetPoint.
+-- hooksecurefunc(ReputationWatchBar,"SetPoint",function(self,_,_,_,_,_,flag)
+  -- if flag~="mbars" then
+    -- self:ClearAllPoints()
+    -- if level~=85 then
+      -- self:SetPoint("BOTTOMLEFT",MainMenuExpBar,"TOPLEFT",0,2,"mbars")
+    -- else
+	-- self:SetPoint("BOTTOMLEFT",MainMenuExpBar,"TOPLEFT",0,2,"mbars")
+    -- end
+  -- end
+-- end)
+
+
+		for i = 1, 19 do
+    local texture = _G["MainMenuXPBarDiv"..i]
+    if texture then
+        texture:Hide()
+    end
+end
+for i=0,3 do
+  for _,bar in pairs({"ReputationWatchBarTexture","ReputationXPBarTexture"}) do
+    local texture = _G[bar..i]
+    texture:Hide()
+    texture.Show = function() end
+  end
+end

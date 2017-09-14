@@ -1,0 +1,152 @@
+  ----
+  hooksecurefunc("TargetFrame_UpdateAuraPositions", function(FocusFrame, auraName, numAuras, numOppositeAuras, largeAuraList, updateFunc, maxRowWidth, offsetX )
+	-- a lot of this complexity is in place to allow the auras to wrap around the target of target frame if it's shown
+
+	-- Position auras
+	local size;
+	local offsetY = AURA_OFFSET_Y;
+	-- current width of a row, increases as auras are added and resets when a new aura's width exceeds the max row width
+	local rowWidth = 0;
+	local firstBuffOnRow = 1;
+	for i=1, numAuras do
+		-- update size and offset info based on large aura status
+		if ( largeAuraList[i] ) then
+			size = LARGE_AURA_SIZE;
+			offsetY = AURA_OFFSET_Y + AURA_OFFSET_Y;
+		else
+			size = SMALL_AURA_SIZE;
+		end
+
+		-- anchor the current aura
+		if ( i == 1 ) then
+			rowWidth = size;
+			FocusFrame.auraRows = FocusFrame.auraRows + 1;
+		else
+			rowWidth = rowWidth + size + offsetX;
+		end
+		if ( rowWidth > maxRowWidth ) then
+			-- this aura would cause the current row to exceed the max row width, so make this aura
+			-- the start of a new row instead
+			updateFunc(FocusFrame, auraName, i, numOppositeAuras, firstBuffOnRow, size, offsetX, offsetY);
+
+			rowWidth = size;
+			FocusFrame.auraRows = FocusFrame.auraRows + 1;
+			firstBuffOnRow = i;
+			offsetY = AURA_OFFSET_Y;
+
+			if ( FocusFrame.auraRows > NUM_TOT_AURA_ROWS ) then
+				-- if we exceed the number of tot rows, then reset the max row width
+				-- note: don't have to check if we have tot because AURA_ROW_WIDTH is the default anyway
+				maxRowWidth = AURA_ROW_WIDTH;
+			end
+		else
+			updateFunc(FocusFrame, auraName, i, numOppositeAuras, i - 1, size, offsetX, offsetY);
+		end
+	end
+end)
+   -
+   hooksecurefunc("TargetFrame_UpdateDebuffAnchor", function(FocusFrame, debuffName, index, numBuffs, anchorIndex, size, offsetX, offsetY )
+	local buff = _G[debuffName..index];
+	local isFriend = UnitIsFriend("player", FocusFrame.unit);
+	
+	-- For mirroring vertically
+	local point, relativePoint;
+	local startY, auraOffsetY;
+	
+		point = "BOTTOM";
+		relativePoint = "TOP";
+		startY = -15;
+		if ( FocusFrame.threatNumericIndicator:IsShown() ) then
+			startY = startY + FocusFrame.threatNumericIndicator:GetHeight();
+		end
+		offsetY = - offsetY;
+		auraOffsetY = -AURA_OFFSET_Y;
+	
+		point = "TOP";
+		relativePoint="BOTTOM";
+		startY = AURA_START_Y;
+		auraOffsetY = AURA_OFFSET_Y;
+	
+	if ( index == 1 ) then
+		if ( isFriend and numBuffs > 0 ) then
+			-- unit is friendly and there are buffs...debuffs start on bottom
+			buff:SetPoint(point.."LEFT", FocusFrame.buffs, relativePoint.."LEFT", 0, -offsetY);
+		else
+			-- unit is not friendly or there are no buffs...debuffs start on top
+			buff:SetPoint(point.."LEFT", FocusFrame, relativePoint.."LEFT", AURA_START_X, startY);
+		end
+		FocusFrame.debuffs:SetPoint(point.."LEFT", buff, point.."LEFT", 0, 0);
+		FocusFrame.debuffs:SetPoint(relativePoint.."LEFT", buff, relativePoint.."LEFT", 0, -auraOffsetY);
+		-- if ( ( isFriend ) or ( not isFriend and numBuffs == 0) ) then
+			-- self.spellbarAnchor = buff;
+		-- end
+	elseif ( anchorIndex ~= (index-1) ) then
+		-- anchor index is not the previous index...must be a new row
+		buff:SetPoint(point.."LEFT", _G[debuffName..anchorIndex], relativePoint.."LEFT", 0, -offsetY);
+		FocusFrame.debuffs:SetPoint(relativePoint.."LEFT", buff, relativePoint.."LEFT", 0, -auraOffsetY);
+		-- if ( ( isFriend ) or ( not isFriend and numBuffs == 0) ) then
+			-- self.spellbarAnchor = buff;
+		-- end
+	-- else
+		-- anchor index is the previous index
+		buff:SetPoint(point.."LEFT", _G[debuffName..(index-1)], point.."RIGHT", offsetX, 0);
+	end
+	
+
+	-- Resize
+	buff:SetWidth(size);
+	buff:SetHeight(size);
+	local debuffFrame =_G[debuffName..index.."Border"];
+	debuffFrame:SetWidth(size+2);
+	debuffFrame:SetHeight(size+2);
+		end)
+  hooksecurefunc("TargetFrame_UpdateBuffAnchor", function(FocusFrame,buffName, index, numDebuffs, anchorIndex, size, offsetX, offsetY)
+  local point, relativePoint;
+	local startY, auraOffsetY;
+	local AURA_OFFSET_Y = 3
+ local Frame=get
+ 
+ 
+		point = "BOTTOM";
+		relativePoint = "TOP";
+		startY = -15;
+		if ( FocusFrame.threatNumericIndicator:IsShown() ) then
+			startY = startY + FocusFrame.threatNumericIndicator:GetHeight();
+		end
+		offsetY = - offsetY;
+		auraOffsetY = - AURA_OFFSET_Y;
+	
+	
+	local buff = _G[buffName..index];
+	if ( index == 1 ) then
+		if ( UnitIsFriend("player", FocusFrame.unit) or numDebuffs == 0 ) then
+			-- unit is friendly or there are no debuffs...buffs start on top
+			buff:SetPoint(point.."LEFT", FocusFrame, relativePoint.."LEFT", AURA_START_X, startY);			
+		else
+			-- unit is not friendly and we have debuffs...buffs start on bottom
+			buff:SetPoint(point.."LEFT", FocusFrame.debuffs, relativePoint.."LEFT", 0, -offsetY);
+		end
+		FocusFrame.buffs:SetPoint(point.."LEFT", buff, point.."LEFT", 0, 0);
+		FocusFrame.buffs:SetPoint(relativePoint.."LEFT", buff, relativePoint.."LEFT", 0, -auraOffsetY);
+		-- Fra.spellbarAnchor = buff;
+	elseif ( anchorIndex ~= (index-1) ) then
+		-- anchor index is not the previous index...must be a new row
+		buff:SetPoint(point.."LEFT", _G[buffName..anchorIndex], relativePoint.."LEFT", 0, -offsetY);
+		FocusFrame.buffs:SetPoint(relativePoint.."LEFT", buff, relativePoint.."LEFT", 0, -auraOffsetY);
+		-- Frame.spellbarAnchor = buff;
+	else
+		-- anchor index is the previous index
+		buff:SetPoint(point.."LEFT", _G[buffName..anchorIndex], point.."RIGHT", offsetX, 0);
+	end
+	buff:SetWidth(size);
+	buff:SetHeight(size);
+
+
+ 
+  
+  end)
+hooksecurefunc("TargetFrame_UpdateBuffAnchor", function(Frame)
+  _G[Frame:GetName().."Buff1"]:ClearAllPoints()
+  _G[Frame:GetName().."Buff1"]:SetPoint("BOTTOMLEFT", Frame, "TOPLEFT", 5, -10)
+end)
+-- hooksecurefunc("TargetFrame_UpdateBuffAnchor",function(s,n,i)if i==1 then local f=_G[n..i]f:ClearAllPoints()f:SetPoint("LEFT",s,"RIGHT",0,0)end end)
